@@ -1,0 +1,51 @@
+! Router-on-a-stick for company "Sfera"
+hostname R-SFERA
+!
+interface Ethernet0/0
+ no ip address
+ no shutdown
+!
+interface Ethernet0/0.10
+ encapsulation dot1Q 10
+ ip address 192.168.60.1 255.255.255.192
+ ip nat inside
+!
+interface Ethernet0/0.20
+ encapsulation dot1Q 20
+ ip address 192.168.60.65 255.255.255.192
+ ip nat inside
+!
+interface Ethernet0/0.30
+ encapsulation dot1Q 30
+ ip address 192.168.60.129 255.255.255.224
+ ip nat inside
+!
+interface Ethernet0/2
+ ip address 203.0.113.5 255.255.255.252
+ ip nat outside
+ no shutdown
+!
+ip access-list extended NAT-LAN
+ permit ip 192.168.60.0 0.0.0.255 any
+!
+ip nat inside source list NAT-LAN interface Ethernet0/2 overload
+!
+ip nat inside source static tcp 192.168.60.130 80 203.0.113.5 80
+!
+ip access-list extended VLAN10-IN
+ deny ip 192.168.60.0 0.0.0.63 192.168.60.64 0.0.0.63
+ permit ip any any
+!
+ip access-list extended VLAN20-IN
+ deny ip 192.168.60.64 0.0.0.63 192.168.60.0 0.0.0.63
+ permit ip any any
+!
+interface Ethernet0/0.10
+ ip access-group VLAN10-IN in
+!
+interface Ethernet0/0.20
+ ip access-group VLAN20-IN in
+!
+ip route 0.0.0.0 0.0.0.0 203.0.113.6
+!
+end
